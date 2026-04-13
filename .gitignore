@@ -1,0 +1,19 @@
+# Large data files
+AOTS_DATA_SHARE*.csv
+
+# Python environment
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Video frames (large binary directories)
+outputs/video_frames/
+outputs/video_frames_FINA/
+
+# macOS
+.DS_Store
+.sixth/
+
+# Editor
+.vscode/

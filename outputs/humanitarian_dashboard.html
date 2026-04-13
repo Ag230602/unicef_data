@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>UNICEF – Humanitarian Risk Command</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg0:#04080f;--bg1:#080e1c;--bg2:#0c1526;--bg3:#101e30;--blue:#00aaff;--cyan:#00e5ff;--red:#ff3b30;--orange:#ff9500;--yellow:#ffcc00;--green:#30d158;--text1:#ddeeff;--text2:#6a8cb8;--text3:#2d4a70;--border:rgba(0,170,255,0.12);}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg0);color:var(--text1);font-family:"Inter",sans-serif;overflow-x:hidden;}
+body::before{content:"";position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,170,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,170,255,.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+.hdr{position:sticky;top:0;z-index:200;background:linear-gradient(180deg,#060c1a 0%,rgba(6,12,26,.95) 100%);border-bottom:1px solid var(--border);backdrop-filter:blur(16px);display:flex;align-items:center;justify-content:space-between;padding:10px 22px;gap:16px;}
+.hdr-brand{display:flex;align-items:center;gap:12px;}
+.hdr-icon{width:50px;height:50px;flex-shrink:0;background:linear-gradient(135deg,#005fa3,#0099ee);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 18px rgba(0,170,255,.4);}
+.hdr-h1{font-family:"Rajdhani",sans-serif;font-size:19px;font-weight:700;letter-spacing:3px;color:var(--cyan);text-shadow:0 0 16px rgba(0,229,255,.35);}
+.hdr-sub{font-size:10px;color:var(--text2);letter-spacing:1.4px;margin-top:2px;}
+.hdr-clock{font-family:"Rajdhani",sans-serif;font-size:13px;color:var(--cyan);letter-spacing:2px;background:rgba(0,229,255,.06);border:1px solid rgba(0,229,255,.18);border-radius:7px;padding:5px 12px;white-space:nowrap;animation:clockGlow 3s ease-in-out infinite;}
+@keyframes clockGlow{0%,100%{box-shadow:0 0 6px rgba(0,229,255,.2);}50%{box-shadow:0 0 18px rgba(0,229,255,.6);}}
+.kpi-row{display:flex;gap:10px;}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:8px 16px;min-width:106px;text-align:center;position:relative;overflow:hidden;transition:transform .2s;}
+.kpi:hover{transform:translateY(-2px);}
+.kpi::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;}
+.kpi.r::before{background:linear-gradient(90deg,transparent,var(--red),transparent);}
+.kpi.o::before{background:linear-gradient(90deg,transparent,var(--orange),transparent);}
+.kpi.b::before{background:linear-gradient(90deg,transparent,var(--blue),transparent);}
+.kpi.g::before{background:linear-gradient(90deg,transparent,var(--green),transparent);}
+.kpi-v{font-family:"Rajdhani",sans-serif;font-size:26px;font-weight:700;line-height:1;}
+.kpi.r .kpi-v{color:var(--red);}.kpi.o .kpi-v{color:var(--orange);}.kpi.b .kpi-v{color:var(--blue);}.kpi.g .kpi-v{color:var(--green);}
+.kpi-l{font-size:9px;color:var(--text2);letter-spacing:1px;margin-top:3px;text-transform:uppercase;}
+.tab-nav{position:sticky;top:70px;z-index:190;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;padding:0 22px;gap:4px;}
+.tab-btn{background:none;border:none;cursor:pointer;color:var(--text2);padding:12px 26px;font-family:"Rajdhani",sans-serif;font-size:13px;font-weight:600;letter-spacing:2px;text-transform:uppercase;position:relative;transition:color .25s;}
+.tab-btn:hover{color:var(--text1);}.tab-btn.active{color:var(--cyan);}
+.tab-btn.active::after{content:"";position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);box-shadow:0 0 8px rgba(0,229,255,.5);}
+main{padding:18px 22px;position:relative;z-index:1;}
+.tab{display:none;}.tab.active{display:block;}
+.alert{border-radius:9px;padding:10px 18px;margin-bottom:14px;display:flex;align-items:center;gap:10px;font-size:12.5px;line-height:1.5;}
+.alert.red{background:rgba(255,59,48,.08);border:1px solid rgba(255,59,48,.3);animation:pAlertR 3s ease-in-out infinite;}
+.alert.orange{background:rgba(255,149,0,.08);border:1px solid rgba(255,149,0,.3);animation:pAlertO 3s ease-in-out infinite;}
+.alert.blue{background:rgba(0,170,255,.08);border:1px solid rgba(0,170,255,.3);animation:pAlertB 3.5s ease-in-out infinite;}
+@keyframes pAlertR{0%,100%{border-color:rgba(255,59,48,.3);}50%{border-color:rgba(255,59,48,.8);box-shadow:0 0 14px rgba(255,59,48,.2);}}
+@keyframes pAlertO{0%,100%{border-color:rgba(255,149,0,.3);}50%{border-color:rgba(255,149,0,.8);box-shadow:0 0 14px rgba(255,149,0,.2);}}
+@keyframes pAlertB{0%,100%{border-color:rgba(0,170,255,.3);}50%{border-color:rgba(0,170,255,.8);box-shadow:0 0 14px rgba(0,170,255,.15);}}
+.alert em{font-style:normal;font-weight:700;}
+.alert.red em{color:var(--red);}.alert.orange em{color:var(--orange);}.alert.blue em{color:var(--blue);}
+.alert-icon{font-size:18px;flex-shrink:0;}
+.row{display:flex;gap:14px;margin-bottom:14px;}.row>.panel{flex:1;min-width:0;}
+.panel{background:var(--bg2);border:1px solid var(--border);border-radius:11px;overflow:hidden;}
+.ph{padding:11px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.pt{font-family:"Rajdhani",sans-serif;font-size:13px;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);}
+.pb-badge{background:rgba(0,170,255,.1);border:1px solid rgba(0,170,255,.25);border-radius:20px;padding:2px 9px;font-size:10px;color:var(--blue);letter-spacing:.8px;white-space:nowrap;}
+.pb{padding:4px;}
+.ctrl-btn{background:rgba(0,170,255,.08);border:1px solid rgba(0,170,255,.25);border-radius:7px;color:var(--blue);padding:5px 13px;font-size:11px;font-family:"Rajdhani",sans-serif;font-weight:600;letter-spacing:1.2px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.ctrl-btn:hover{background:rgba(0,170,255,.18);color:var(--cyan);}
+.ctrl-btn.active{background:rgba(0,229,255,.12);border-color:var(--cyan);color:var(--cyan);}
+.legend-row{display:flex;flex-wrap:wrap;gap:6px;padding:10px 14px;border-bottom:1px solid var(--border);}
+.legend-chip{display:flex;align-items:center;gap:6px;padding:4px 11px;border-radius:20px;cursor:pointer;transition:all .2s;user-select:none;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);}
+.legend-chip:hover{background:rgba(255,255,255,.09);}
+.legend-chip.off{opacity:.3;filter:grayscale(1);}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.legend-text{font-size:10px;color:var(--text2);}
+.prog-section{padding:10px 16px 14px;}
+.prog-item{margin-bottom:12px;}
+.prog-hdr{display:flex;justify-content:space-between;margin-bottom:5px;}
+.prog-name{font-size:11.5px;}.prog-val{font-size:11.5px;font-weight:700;}
+.prog-track{height:5px;background:rgba(255,255,255,.06);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:3px;width:0;transition:width 1.6s cubic-bezier(.4,0,.2,1);}
+.rtbl{width:100%;border-collapse:collapse;font-size:11.5px;}
+.rtbl th{background:rgba(0,170,255,.05);color:var(--text2);padding:9px 13px;text-align:left;font-size:9.5px;font-weight:600;letter-spacing:1px;text-transform:uppercase;border-bottom:1px solid var(--border);}
+.rtbl td{padding:9px 13px;border-bottom:1px solid rgba(255,255,255,.04);}
+.rtbl tr:not(:first-child){cursor:pointer;transition:background .15s;}
+.rtbl tr:not(:first-child):hover td{background:rgba(0,170,255,.07);}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:9.5px;font-weight:700;letter-spacing:.8px;}
+.badge.crit{background:rgba(255,59,48,.2);color:#ff6b6b;border:1px solid rgba(255,59,48,.4);}
+.badge.high{background:rgba(255,149,0,.2);color:#ffb347;border:1px solid rgba(255,149,0,.4);}
+.badge.med{background:rgba(255,204,0,.2);color:#ffdd55;border:1px solid rgba(255,204,0,.4);}
+.supply-cards{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+.s-card{flex:1;min-width:110px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;padding:11px 13px;text-align:center;transition:transform .2s;}
+.s-card:hover{transform:translateY(-2px);}
+.s-card.warn{border-color:rgba(255,204,0,.3);}
+.s-val{font-family:"Rajdhani",sans-serif;font-size:22px;font-weight:700;color:var(--green);line-height:1;}
+.s-card.warn .s-val{color:var(--yellow);}
+.s-lbl{font-size:9.5px;color:var(--text2);letter-spacing:.8px;margin-top:4px;text-transform:uppercase;}
+.s-unit{font-size:9px;color:var(--text3);margin-top:2px;}
+.slider-wrap{display:flex;align-items:center;gap:14px;padding:12px 16px 8px;flex-wrap:wrap;}
+.slider-lbl{font-family:"Rajdhani",sans-serif;font-size:12px;font-weight:600;letter-spacing:1.2px;color:var(--text2);white-space:nowrap;}
+.slider-val{font-family:"Rajdhani",sans-serif;font-size:22px;font-weight:700;color:var(--cyan);min-width:48px;text-align:center;}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;min-width:160px;height:4px;background:linear-gradient(90deg,var(--blue),var(--cyan));border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--cyan);border:2px solid white;box-shadow:0 0 10px rgba(0,229,255,.55);cursor:pointer;transition:transform .15s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.25);}
+.sort-row{display:flex;align-items:center;gap:8px;padding:7px 14px;border-bottom:1px solid var(--border);}
+.sort-lbl{font-size:10px;color:var(--text2);letter-spacing:.8px;}
+select{background:var(--bg3);border:1px solid var(--border);color:var(--text1);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer;outline:none;}
+.rot-badge{font-size:9px;color:var(--green);background:rgba(48,209,88,.1);border:1px solid rgba(48,209,88,.25);border-radius:12px;padding:2px 8px;letter-spacing:.8px;display:flex;align-items:center;gap:4px;}
+.rot-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 1.2s infinite;}
+@keyframes blink{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.4;transform:scale(.7);}}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:none;}}
+.animate-in{animation:fadeInUp .5s ease both;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg0);}::-webkit-scrollbar-thumb{background:#1e3050;border-radius:3px;}
+@media(max-width:900px){.kpi-row{display:none;}.row{flex-direction:column;}}
+</style>
+</head>
+<body>
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-icon">&#127760;</div>
+    <div><div class="hdr-h1">HUMANITARIAN RISK COMMAND</div><div class="hdr-sub">UNICEF &middot; TROPICAL CYCLONE INTELLIGENCE &middot; LIVE DASHBOARD</div></div>
+  </div>
+  <div class="hdr-clock" id="live-clock">&#9711; LOADING&hellip;</div>
+  <div class="kpi-row">
+    <div class="kpi r"><div class="kpi-v" id="kpi-cones">0</div><div class="kpi-l">Active Cones</div></div>
+    <div class="kpi o"><div class="kpi-v" id="kpi-risk">0</div><div class="kpi-l">Mean Risk</div></div>
+    <div class="kpi b"><div class="kpi-v" id="kpi-pop">0</div><div class="kpi-l">Avg Pop Exposed</div></div>
+    <div class="kpi o"><div class="kpi-v" id="kpi-storms">0</div><div class="kpi-l">Storm Systems</div></div>
+    <div class="kpi g"><div class="kpi-v" id="kpi-regions">0</div><div class="kpi-l">Risk Regions</div></div>
+  </div>
+</header>
+<nav class="tab-nav">
+  <button class="tab-btn active" onclick="switchTab('risk',this)">&#9888; RISK PREP</button>
+  <button class="tab-btn" onclick="switchTab('rescue',this)">&#128641; RESCUE PREP</button>
+  <button class="tab-btn" onclick="switchTab('supply',this)">&#128230; SUPPLY PREP</button>
+</nav>
+<main>
+<div id="tab-risk" class="tab active">
+  <div class="alert red animate-in"><span class="alert-icon">&#128680;</span><span><em>CRITICAL:</em> 8 active storm systems across 3 ocean basins. Regions <em>R_10_29</em> (218 cones), <em>R_7_30</em> (99 cones) exceed P90 risk 78.6. DITWAH ensemble projects <em>6.49 M people</em> within 96 h cone.</span></div>
+  <div class="row">
+    <div class="panel" style="flex:2.2;">
+      <div class="ph">
+        <span class="pt">&#127758; Storm Track Intelligence &mdash; Live Animation</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button class="ctrl-btn active" id="btn-play" onclick="togglePlay()">&#9646;&#9646; PAUSE</button>
+          <button class="ctrl-btn" onclick="replayTracks()">&#x21BA; REPLAY</button>
+          <span class="pb-badge" id="anim-badge">STEP 0</span>
+        </div>
+      </div>
+      <div class="legend-row" id="track-legend"></div>
+      <div class="pb" id="risk-globe" style="height:420px;"></div>
+    </div>
+    <div class="panel" style="flex:1;">
+      <div class="ph"><span class="pt">&#9888; Portfolio Risk Index</span></div>
+      <div class="pb" id="risk-gauge" style="height:210px;"></div>
+      <div class="ph" style="border-top:1px solid var(--border);"><span class="pt">&#127744; Storm Risk Scores</span><span style="font-size:9px;color:var(--text3);">/ 100</span></div>
+      <div class="prog-section" id="storm-prog"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="panel" style="flex:3;">
+      <div class="ph"><span class="pt">&#128506; Regional Risk Scores</span><span class="pb-badge">46 REGIONS</span></div>
+      <div class="sort-row">
+        <span class="sort-lbl">SORT BY:</span>
+        <select onchange="sortRegions(this.value)"><option value="risk">Risk Score</option><option value="pop">Population</option><option value="cones">Cone Count</option><option value="p90">P90 Risk</option></select>
+        <span class="sort-lbl" style="margin-left:10px;">FILTER RISK &gt;:</span>
+        <select id="filter-thresh" onchange="sortRegions(document.querySelector('.sort-row select').value)"><option value="0">All</option><option value="70">70</option><option value="72">72</option><option value="74">74</option></select>
+      </div>
+      <div class="pb" id="risk-regions" style="height:285px;"></div>
+    </div>
+    <div class="panel" style="flex:1.8;"><div class="ph"><span class="pt">&#128202; Population vs Risk</span></div><div class="pb" id="risk-scatter" style="height:325px;"></div></div>
+  </div>
+</div>
+<div id="tab-rescue" class="tab">
+  <div class="alert orange animate-in"><span class="alert-icon">&#128641;</span><span><em>RESCUE ALERT:</em> P90 ensemble exposure at 96 h peaks at <em>9.27 M people</em>. Deploy pre-positioned SAR teams to <em>R_10_29</em> (4.67 M, 218 cones) and <em>R_7_30</em> (3.71 M). Coastal exposure ~72%.</span></div>
+  <div class="row">
+    <div class="panel">
+      <div class="ph">
+        <span class="pt">&#127758; 3D Population-Exposure Globe &mdash; Auto-Rotating</span>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="rot-badge"><div class="rot-dot"></div>LIVE ROTATION</div>
+          <button class="ctrl-btn active" id="btn-rot" onclick="toggleRotation()">&#9646;&#9646; PAUSE</button>
+          <span class="pb-badge">DRAG TO EXPLORE</span>
+        </div>
+      </div>
+      <div class="pb" id="rescue-3d" style="height:510px;"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="panel" style="flex:1.6;overflow-x:auto;">
+      <div class="ph"><span class="pt">&#127919; Rescue Priority Zones</span><span class="pb-badge">CLICK ROW TO HIGHLIGHT</span></div>
+      <table class="rtbl" id="rescue-tbl"></table>
+    </div>
+    <div class="panel" style="flex:1;"><div class="ph"><span class="pt">&#128507; Max Pop at Risk by Storm</span></div><div class="pb" id="rescue-pop" style="height:300px;"></div></div>
+  </div>
+</div>
+<div id="tab-supply" class="tab">
+  <div class="alert blue animate-in"><span class="alert-icon">&#128230;</span><span><em>SUPPLY ALERT:</em> Drag the forecast slider to see live supply requirements update in real time. Expected exposure: <em>987 K at 6 h &rarr; 3.83 M at 96 h</em>. P90 worst-case peaks at <em>9.33 M at 72 h</em>.</span></div>
+  <div class="row">
+    <div class="panel">
+      <div class="ph"><span class="pt">&#128200; Population Exposure by Forecast Horizon</span><span class="pb-badge">INTERACTIVE SLIDER</span></div>
+      <div class="slider-wrap">
+        <span class="slider-lbl">FORECAST LEAD TIME:</span>
+        <input type="range" id="lead-slider" min="0" max="5" step="1" value="5" oninput="onLeadChange(this.value)">
+        <span class="slider-val" id="lead-val">96h</span>
+      </div>
+      <div class="pb" id="supply-exposure" style="height:300px;"></div>
+    </div>
+  </div>
+  <div class="supply-cards" id="supply-cards-row"></div>
+  <div class="row">
+    <div class="panel"><div class="ph"><span class="pt">&#127754; Coastal vs Inland</span></div><div class="pb" id="supply-coastal" style="height:265px;"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">&#8987; Supply Gantt</span></div><div class="pb" id="supply-gantt" style="height:265px;"></div></div>
+    <div class="panel"><div class="ph"><span class="pt">&#128201; Risk Score Trend</span></div><div class="pb" id="supply-risk" style="height:265px;"></div></div>
+  </div>
+</div>
+</main>
+<script>
+"use strict";
+const STORMS={
+  DITWAH:{name:"DITWAH",color:"#ff4757",region:"Bay of Bengal",lats:[7.37,7.59,8.10,8.53,8.82,9.07,9.41,9.55,9.81,10.12,10.31,10.56,10.72,10.96,11.13,11.47,11.69,11.97,12.13,12.25,12.40,12.52],lons:[81.05,81.51,81.44,80.95,80.89,81.05,80.54,80.45,80.35,80.62,80.75,80.90,81.08,81.17,81.29,81.33,81.28,81.06,81.18,81.10,80.50,80.17],maxPop:6490264,maxRisk:77.2},
+  FINA:{name:"FINA",color:"#ffa502",region:"Timor Sea",lats:[-9.78,-9.55,-9.55,-9.80,-9.86,-10.02,-10.04,-10.06,-10.30,-10.52,-11.03,-11.40,-11.70,-11.87,-12.11,-12.36,-12.53,-12.93,-13.48,-13.61,-14.08,-14.17,-14.29,-14.49],lons:[131.95,132.23,132.67,133.06,133.24,133.03,133.19,132.80,132.51,132.37,132.12,131.82,131.58,131.16,130.65,130.25,129.79,129.46,129.07,128.66,128.08,127.76,127.85,127.40],maxPop:3800000,maxRisk:74.0},
+  FUNGWONG:{name:"FUNG-WONG",color:"#2ed573",region:"W. Pacific",lats:[9.74,9.77,10.24,11.16,11.55,12.02,12.25,12.25,12.49,12.92,12.89,13.35,14.01,14.76,15.80,16.56,16.90,17.40,18.12,18.45,19.26,20.04,20.76,21.14,21.51,21.66,21.99,23.71,24.92],lons:[140.60,140.09,139.94,138.93,138.04,136.84,135.08,133.76,132.35,130.39,128.17,126.51,124.84,123.38,122.09,120.04,119.34,119.05,118.73,118.63,118.33,118.46,118.75,118.88,119.18,119.74,120.78,121.88,122.94],maxPop:5200000,maxRisk:73.5},
+  KALMAEGI:{name:"KALMAEGI",color:"#1e90ff",region:"S. China Sea",lats:[10.75,11.50,11.34,11.23,10.81,10.62,10.80,10.66,10.75,10.85,10.97,11.10,11.37,11.77,12.31,13.05,13.19,13.25,13.83,14.40,14.82,15.44,15.69],lons:[136.39,134.80,133.46,130.18,128.53,127.28,126.20,124.81,123.15,122.27,121.21,120.17,119.10,117.58,116.18,114.46,112.49,110.88,109.50,107.41,105.81,105.33,103.91],maxPop:4800000,maxRisk:72.0},
+  KOTO:{name:"KOTO",color:"#a29bfe",region:"S. China Sea",lats:[12.05,12.55,12.12,12.56,12.98,13.08,12.85,12.45,12.26,12.22,12.29,12.39,12.68,13.04,13.15,13.45,13.62,13.98,14.43,14.58,14.78,14.55,14.62],lons:[119.11,117.76,116.32,115.61,114.92,114.28,113.80,113.95,113.33,113.07,112.69,112.59,112.52,112.45,112.10,112.05,112.07,112.19,112.03,112.06,111.73,111.70,111.43],maxPop:3200000,maxRisk:70.5},
+  MELISSA:{name:"MELISSA",color:"#ff6b81",region:"Caribbean Sea",lats:[14.91,15.28,15.36,15.73,15.63,15.67,15.86,16.15,16.54,16.26,16.30,16.44,16.51],lons:[-75.01,-75.08,-75.14,-75.41,-75.63,-74.88,-74.94,-75.05,-75.36,-75.54,-76.15,-76.37,-76.72],maxPop:2800000,maxRisk:68.0},
+  GEZANI:{name:"GEZANI",color:"#00cec9",region:"Mozambique Channel",lats:[-18.26,-18.10,-18.15,-18.09,-18.83,-19.02,-18.93,-19.39,-19.93,-20.40,-20.64,-21.15,-21.49,-22.22,-22.95,-24.00],lons:[51.00,50.10,49.16,47.80,45.29,44.33,43.47,41.98,41.07,39.82,38.87,37.65,36.96,36.17,35.83,35.65],maxPop:1900000,maxRisk:65.0},
+  DUDZAI:{name:"DUDZAI",color:"#fd79a8",region:"Indian Ocean",lats:[-16.87,-17.45,-18.23,-19.55,-20.81],lons:[73.40,70.34,67.45,64.34,63.58],maxPop:1200000,maxRisk:63.0}
+};
+const ALL_REGIONS=[
+  {id:"R_8_31",pop:1879852,risk:75.36,p90:76.53,cones:19},{id:"R_9_26",pop:1220146,risk:74.65,p90:75.67,cones:20},
+  {id:"R_7_30",pop:3709698,risk:74.29,p90:76.13,cones:99},{id:"R_7_31",pop:2478108,risk:74.13,p90:77.71,cones:38},
+  {id:"R_10_29",pop:4667615,risk:73.87,p90:78.61,cones:218},{id:"R_10_9",pop:4432656,risk:73.38,p90:73.38,cones:1},
+  {id:"R_10_10",pop:3916870,risk:72.33,p90:75.03,cones:100},{id:"R_10_26",pop:2177408,risk:71.71,p90:76.55,cones:107},
+  {id:"R_10_6",pop:1031304,risk:70.86,p90:72.04,cones:15},{id:"R_10_30",pop:974805,risk:70.65,p90:74.23,cones:72},
+  {id:"R_9_30",pop:409128,risk:70.63,p90:71.91,cones:9},{id:"R_10_32",pop:413112,risk:70.44,p90:70.59,cones:2},
+  {id:"R_9_32",pop:334912,risk:70.06,p90:70.26,cones:3},{id:"R_10_31",pop:463306,risk:69.46,p90:70.68,cones:33},
+  {id:"R_11_29",pop:1649229,risk:66.82,p90:68.84,cones:25},{id:"R_6_22",pop:2912567,risk:66.56,p90:70.37,cones:9},
+  {id:"R_10_28",pop:1447357,risk:66.00,p90:73.76,cones:68},{id:"R_10_5",pop:722547,risk:65.58,p90:71.30,cones:51},
+  {id:"R_9_28",pop:319518,risk:65.38,p90:76.26,cones:33},{id:"R_6_21",pop:1903430,risk:65.31,p90:68.97,cones:64}
+];
+const HORIZONS=[
+  {h:6,exp:987841,p90:2240284,re:67.94,rp:74.23},{h:12,exp:1154520,p90:2532746,re:68.80,rp:74.67},
+  {h:24,exp:1593987,p90:3537966,re:68.47,rp:75.33},{h:48,exp:2542446,p90:6246027,re:68.15,rp:76.87},
+  {h:72,exp:3400938,p90:9330418,re:67.88,rp:77.90},{h:96,exp:3830991,p90:9269411,re:65.62,rp:78.39}
+];
+const stormArr=Object.values(STORMS);
+const BASE={paper_bgcolor:"transparent",plot_bgcolor:"transparent",font:{family:"Inter,sans-serif",color:"#6a8cb8",size:11},margin:{l:50,r:20,t:20,b:40}};
+const fmtPop=n=>n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?(n/1e3).toFixed(0)+"K":""+n;
+const fmtN=n=>n>=1e6?(n/1e6).toFixed(2)+"M":n>=1e3?Math.round(n/1e3)+"K":Math.round(n)+"";
+function ll2xyz(lat,lon,r){r=r||1.015;var ph=lat*Math.PI/180,th=lon*Math.PI/180;return[r*Math.cos(ph)*Math.cos(th),r*Math.cos(ph)*Math.sin(th),r*Math.sin(ph)];}
+function circle(lat0,lon0,degR,n){n=n||52;return Array.from({length:n+1},function(_,i){var a=2*Math.PI*i/n;return[lat0+degR*Math.sin(a),lon0+degR*Math.cos(a)/Math.max(0.01,Math.cos(lat0*Math.PI/180))];});}
+function countUp(id,target,suffix,dur,dec){
+  dec=dec||0;var el=document.getElementById(id);if(!el)return;
+  var s=performance.now();
+  function step(ts){var t=Math.min((ts-s)/dur,1),e=1-Math.pow(1-t,3),v=target*e;el.textContent=(dec?v.toFixed(dec):Math.round(v))+suffix;if(t<1)requestAnimationFrame(step);}
+  requestAnimationFrame(step);
+}
+function startClock(){
+  function tick(){var n=new Date(),p=function(x){return String(x).padStart(2,"0");};document.getElementById("live-clock").textContent="UTC "+n.getUTCFullYear()+"-"+p(n.getUTCMonth()+1)+"-"+p(n.getUTCDate())+" "+p(n.getUTCHours())+":"+p(n.getUTCMinutes())+":"+p(n.getUTCSeconds());}
+  tick();setInterval(tick,1000);
+}
+var _rendered={};
+function switchTab(name,btn){
+  document.querySelectorAll(".tab").forEach(function(t){t.classList.remove("active");});
+  document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.remove("active");});
+  document.getElementById("tab-"+name).classList.add("active");btn.classList.add("active");
+  if(!_rendered[name]){_rendered[name]=true;RENDERERS[name]();}
+}
+var stormVis={};stormArr.forEach(function(s){stormVis[s.name]=true;});
+var stormIdx={};
+var globeReady=false,animStep=0,animTimer=null,animPlaying=true;
+var maxSteps=Math.max.apply(null,stormArr.map(function(s){return s.lats.length;}));
+var pulseTimer=null,pulsePhase=0;
+function renderRisk(){
+  var traces=[];
+  stormArr.forEach(function(s){
+    var b=traces.length;stormIdx[s.name]={line:b,marker:b+1,ring:b+2};
+    traces.push({type:"scattergeo",lat:[],lon:[],mode:"lines",showlegend:false,line:{color:s.color,width:2.8},hoverinfo:"skip"});
+    traces.push({type:"scattergeo",lat:[],lon:[],mode:"markers",showlegend:false,marker:{size:[],color:s.color,symbol:[],line:{color:"white",width:0.8}},hovertemplate:"<b>"+s.name+"</b><br>%{lat:.2f}, %{lon:.2f}<br>"+s.region+"<br>Risk: "+s.maxRisk+"<extra></extra>"});
+    var last=s.lats.length-1,ring=circle(s.lats[last],s.lons[last],2.5);
+    traces.push({type:"scattergeo",lat:ring.map(function(p){return p[0];}),lon:ring.map(function(p){return p[1];}),mode:"lines",showlegend:false,hoverinfo:"skip",line:{color:s.color,width:1.2,dash:"dot"},opacity:0});
+  });
+  var legEl=document.getElementById("track-legend");legEl.innerHTML="";
+  stormArr.forEach(function(s){
+    var c=document.createElement("div");c.className="legend-chip";c.id="chip-"+s.name;
+    c.innerHTML='<div class="legend-dot" style="background:'+s.color+'"></div><span class="legend-text">'+s.name+' &mdash; '+s.region+'</span>';
+    c.onclick=function(){toggleStorm(s.name,c);};legEl.appendChild(c);
+  });
+  Plotly.newPlot("risk-globe",traces,Object.assign({},BASE,{margin:{l:0,r:0,t:0,b:0},showlegend:false,
+    geo:{projection:{type:"natural earth"},showland:true,landcolor:"#142030",showocean:true,oceancolor:"#060d1c",showlakes:true,lakecolor:"#0a1525",showcoastlines:true,coastlinecolor:"#1e3050",showcountries:true,countrycolor:"#192840",showframe:false,bgcolor:"transparent",resolution:50}
+  }),{responsive:true,displayModeBar:false}).then(function(){globeReady=true;startTrackAnim();});
+  Plotly.newPlot("risk-gauge",[{type:"indicator",mode:"gauge+number+delta",value:0,
+    delta:{reference:60,increasing:{color:"#ff4757"}},
+    title:{text:"PORTFOLIO RISK INDEX",font:{size:11,color:"#6a8cb8",family:"Rajdhani"}},
+    gauge:{axis:{range:[0,100],tickwidth:1,tickcolor:"#2d4a70",tickfont:{size:8,color:"#6a8cb8"}},
+      bar:{color:"#ff5e3a",thickness:0.25},bgcolor:"transparent",borderwidth:0,
+      steps:[{range:[0,40],color:"rgba(48,209,88,.12)"},{range:[40,60],color:"rgba(255,204,0,.10)"},{range:[60,80],color:"rgba(255,149,0,.12)"},{range:[80,100],color:"rgba(255,59,48,.18)"}],
+      threshold:{line:{color:"#ffcc00",width:3},thickness:0.7,value:76.14}},
+    number:{font:{size:38,color:"#ff5e3a",family:"Rajdhani"}}}],
+    Object.assign({},BASE,{margin:{l:25,r:25,t:30,b:10},height:200}),{responsive:true,displayModeBar:false});
+  setTimeout(function(){
+    var dur=1500,s=performance.now();
+    function step(ts){var t=Math.min((ts-s)/dur,1),e=1-Math.pow(1-t,3),v=67.86*e;Plotly.restyle("risk-gauge",{value:[[v]]});if(t<1)requestAnimationFrame(step);}
+    requestAnimationFrame(step);
+  },400);
+  var sorted=stormArr.slice().sort(function(a,b){return b.maxRisk-a.maxRisk;});
+  document.getElementById("storm-prog").innerHTML=sorted.map(function(s){return '<div class="prog-item"><div class="prog-hdr"><span class="prog-name" style="color:'+s.color+'">'+s.name+'</span><span class="prog-val" style="color:'+s.color+'">'+s.maxRisk.toFixed(1)+'</span></div><div class="prog-track"><div class="prog-fill" id="pf-'+s.name+'" style="background:linear-gradient(90deg,'+s.color+'44,'+s.color+')"></div></div></div>';}).join("");
+  setTimeout(function(){sorted.forEach(function(s){var e=document.getElementById("pf-"+s.name);if(e)e.style.width=s.maxRisk+"%";});},350);
+  sortRegions("risk");renderRiskScatter();
+}
+function startTrackAnim(){
+  animStep=0;animPlaying=true;clearInterval(animTimer);
+  document.getElementById("btn-play").textContent="⏸ PAUSE";document.getElementById("btn-play").classList.add("active");
+  animTimer=setInterval(tickAnim,100);
+}
+function tickAnim(){
+  if(!globeReady)return;animStep++;
+  document.getElementById("anim-badge").textContent="STEP "+animStep;
+  stormArr.forEach(function(s){
+    var n=Math.min(animStep,s.lats.length);
+    var lats=s.lats.slice(0,n),lons=s.lons.slice(0,n);
+    var sz=lats.map(function(_,i){return i===n-1?15:5;}),sym=lats.map(function(_,i){return i===n-1?"star":"circle";});
+    var idx=stormIdx[s.name],vis=stormVis[s.name];
+    Plotly.restyle("risk-globe",{lat:[lats],lon:[lons],visible:[vis]},[idx.line]);
+    Plotly.restyle("risk-globe",{lat:[lats],lon:[lons],"marker.size":[sz],"marker.symbol":[sym],visible:[vis]},[idx.marker]);
+    if(n>=s.lats.length)Plotly.restyle("risk-globe",{opacity:[0.5]},[idx.ring]);
+  });
+  if(animStep>=maxSteps){clearInterval(animTimer);animPlaying=false;document.getElementById("btn-play").textContent="▶ PLAY";document.getElementById("btn-play").classList.remove("active");startPulse();}
+}
+function togglePlay(){
+  if(animPlaying){clearInterval(animTimer);animPlaying=false;document.getElementById("btn-play").textContent="▶ PLAY";document.getElementById("btn-play").classList.remove("active");}
+  else{animPlaying=true;document.getElementById("btn-play").textContent="⏸ PAUSE";document.getElementById("btn-play").classList.add("active");if(animStep>=maxSteps)animStep=0;animTimer=setInterval(tickAnim,100);}
+}
+function replayTracks(){
+  stopPulse();stormArr.forEach(function(s){Plotly.restyle("risk-globe",{opacity:[0]},[stormIdx[s.name].ring]);});
+  animStep=0;animPlaying=true;clearInterval(animTimer);
+  document.getElementById("btn-play").textContent="⏸ PAUSE";document.getElementById("btn-play").classList.add("active");
+  animTimer=setInterval(tickAnim,100);
+}
+function startPulse(){
+  pulsePhase=0;
+  pulseTimer=setInterval(function(){
+    pulsePhase^=1;
+    stormArr.forEach(function(s){
+      if(!stormVis[s.name])return;
+      var n=s.lats.length;
+      Plotly.restyle("risk-globe",{"marker.size":[s.lats.map(function(_,i){return i===n-1?(pulsePhase?19:11):5;})]},[stormIdx[s.name].marker]);
+    });
+  },700);
+}
+function stopPulse(){clearInterval(pulseTimer);}
+function toggleStorm(name,chip){
+  stormVis[name]=!stormVis[name];chip.classList.toggle("off",!stormVis[name]);
+  var idx=stormIdx[name];Plotly.restyle("risk-globe",{visible:[stormVis[name]]},[idx.line,idx.marker,idx.ring]);
+}
+function sortRegions(key){
+  var thresh=parseFloat(document.getElementById("filter-thresh").value)||0;
+  var data=ALL_REGIONS.filter(function(r){return r.risk>=thresh;}).slice().sort(function(a,b){return b[key]-a[key];}).slice(0,20);
+  var colors=data.map(function(r){return r.risk>=74?"#ff4757":r.risk>=70?"#ffa502":r.risk>=65?"#ffcc00":"#30d158";});
+  Plotly.react("risk-regions",[
+    {type:"bar",x:data.map(function(r){return r.id;}),y:data.map(function(r){return r.risk;}),name:"Mean Risk",marker:{color:colors,opacity:0.85},hovertemplate:"<b>%{x}</b><br>Risk: %{y:.2f}<extra></extra>"},
+    {type:"scatter",x:data.map(function(r){return r.id;}),y:data.map(function(r){return r.p90;}),name:"P90 Risk",mode:"lines+markers",line:{color:"#ff6b81",width:1.5,dash:"dot"},marker:{size:5,color:"#ff6b81"}}
+  ],Object.assign({},BASE,{margin:{l:50,r:20,t:20,b:60},
+    xaxis:{tickangle:-45,tickfont:{size:9,color:"#2d4a70"},showgrid:false},
+    yaxis:{range:[thresh||58,82],title:{text:"Risk Score",font:{size:10}},gridcolor:"rgba(255,255,255,.05)",zeroline:false},
+    showlegend:true,legend:{orientation:"h",x:0,y:1.08,bgcolor:"transparent",font:{size:10}},
+    shapes:[{type:"line",x0:-0.5,x1:data.length-0.5,y0:73,y1:73,line:{color:"#ff4757",width:1,dash:"dash"}}],
+    annotations:[{x:data.length-2,y:73.5,text:"CRITICAL THRESHOLD",showarrow:false,font:{size:8,color:"#ff4757"}}]
+  }),{responsive:true,displayModeBar:false});
+}
+function renderRiskScatter(){
+  Plotly.newPlot("risk-scatter",[{type:"scatter",
+    x:ALL_REGIONS.map(function(r){return r.pop/1e6;}),
+    y:ALL_REGIONS.map(function(r){return r.risk;}),
+    mode:"markers+text",
+    text:ALL_REGIONS.map(function(r){return r.id;}),
+    textposition:"top center",textfont:{size:8,color:"#2d4a70"},
+    marker:{
+      size:ALL_REGIONS.map(function(r){return Math.sqrt(r.cones)*3.5+7;}),
+      color:ALL_REGIONS.map(function(r){return r.risk;}),
+      colorscale:[[0,"#30d158"],[0.4,"#ffcc00"],[0.7,"#ffa502"],[1,"#ff4757"]],
+      colorbar:{title:{text:"Risk",font:{size:10}},thickness:10,len:0.7},
+      opacity:0.82,line:{color:"rgba(255,255,255,.15)",width:1}
+    },
+    hovertemplate:"<b>%{text}</b><br>Pop: %{x:.2f}M<br>Risk: %{y:.2f}<extra></extra>"}],
+    Object.assign({},BASE,{
+      xaxis:{title:{text:"Population Exposed (M)",font:{size:10}},gridcolor:"rgba(255,255,255,.04)",zeroline:false},
+      yaxis:{title:{text:"Risk Score",font:{size:10}},gridcolor:"rgba(255,255,255,.04)",zeroline:false,range:[0,82]},
+      showlegend:false
+    }),{responsive:true,displayModeBar:false});
+}
+var rotAngle=0,rotTimer=null,rotPaused=false;
+var ROT_SPEED=0.32,ROT_R=1.6;
+function renderRescue(){
+  var tr=[];var N=60,Xg=[],Yg=[],Zg=[];
+  for(var i=0;i<=N;i++){var phi=(-90+180*i/N)*Math.PI/180;var xr=[],yr=[],zr=[];for(var j=0;j<=N;j++){var th=(-180+360*j/N)*Math.PI/180;xr.push(Math.cos(phi)*Math.cos(th));yr.push(Math.cos(phi)*Math.sin(th));zr.push(Math.sin(phi));}Xg.push(xr);Yg.push(yr);Zg.push(zr);}
+  tr.push({type:"surface",x:Xg,y:Yg,z:Zg,colorscale:[[0,"#060f20"],[0.4,"#0d1e38"],[1,"#142a50"]],showscale:false,opacity:1,hoverinfo:"none",lighting:{diffuse:0.85,specular:0.25,roughness:0.9}});
+  stormArr.forEach(function(s){
+    if(!s.lats.length)return;
+    var coords=s.lats.map(function(lat,i){return ll2xyz(lat,s.lons[i],1.015);});
+    tr.push({type:"scatter3d",x:coords.map(function(c){return c[0];}),y:coords.map(function(c){return c[1];}),z:coords.map(function(c){return c[2];}),mode:"lines",showlegend:false,line:{color:s.color,width:5},hoverinfo:"none"});
+    var last=s.lats.length-1,hd=ll2xyz(s.lats[last],s.lons[last],1.055);
+    tr.push({type:"scatter3d",x:[hd[0]],y:[hd[1]],z:[hd[2]],mode:"markers+text",text:[s.name],textfont:{size:10,color:s.color},textposition:"top center",marker:{size:Math.sqrt(s.maxPop/1e5)*2.2+8,color:s.color,opacity:0.88,line:{color:"white",width:1.2}},showlegend:false,hovertemplate:"<b>"+s.name+"</b><br>Pop: "+fmtPop(s.maxPop)+"<br>Risk: "+s.maxRisk+"<br>"+s.region+"<extra></extra>"});
+    var ring=circle(s.lats[last],s.lons[last],4),rc=ring.map(function(p){return ll2xyz(p[0],p[1],1.022);});
+    tr.push({type:"scatter3d",x:rc.map(function(c){return c[0];}),y:rc.map(function(c){return c[1];}),z:rc.map(function(c){return c[2];}),mode:"lines",showlegend:false,hoverinfo:"none",line:{color:s.color,width:1.8,dash:"dot"},opacity:0.55});
+  });
+  Plotly.newPlot("rescue-3d",tr,{paper_bgcolor:"transparent",margin:{l:0,r:0,t:0,b:0},showlegend:false,
+    scene:{bgcolor:"#020810",xaxis:{visible:false,showgrid:false},yaxis:{visible:false,showgrid:false},zaxis:{visible:false,showgrid:false},camera:{eye:{x:ROT_R,y:0,z:0.45},up:{x:0,y:0,z:1}},aspectmode:"cube"}
+  },{responsive:true,displayModeBar:false}).then(function(){
+    startRotation();
+    var d=document.getElementById("rescue-3d");
+    ["mousedown","touchstart"].forEach(function(e){d.addEventListener(e,function(){rotPaused=true;});});
+    ["mouseup","touchend"].forEach(function(e){d.addEventListener(e,function(){setTimeout(function(){rotPaused=false;},1500);});});
+  });
+  function prio(r){var s=r.risk*r.pop/1e6;return s>=250?["CRITICAL","crit"]:s>=100?["HIGH","high"]:["MEDIUM","med"];}
+  document.getElementById("rescue-tbl").innerHTML='<thead><tr><th>Region</th><th>Priority</th><th>Risk</th><th>P90</th><th>Pop</th><th>Cones</th><th>SAR</th></tr></thead><tbody>'+ALL_REGIONS.slice(0,12).map(function(r){var pr=prio(r),lbl=pr[0],cls=pr[1];var teams=Math.ceil(r.pop/500000);var rc=r.risk>=74?"#ff4757":r.risk>=70?"#ffa502":"#ffcc00";return'<tr><td style="font-family:Rajdhani;font-weight:700;color:#00e5ff">'+r.id+'</td><td><span class="badge '+cls+'">'+lbl+'</span></td><td style="color:'+rc+'">'+r.risk.toFixed(2)+'</td><td style="color:#6a8cb8">'+r.p90.toFixed(2)+'</td><td>'+fmtPop(r.pop)+'</td><td>'+r.cones+'</td><td style="color:#30d158">'+teams+' teams</td></tr>';}).join("")+'</tbody>';
+  var sl=stormArr.slice().sort(function(a,b){return b.maxPop-a.maxPop;});
+  Plotly.newPlot("rescue-pop",[{type:"bar",orientation:"h",y:sl.map(function(s){return s.name;}),x:sl.map(function(s){return s.maxPop/1e6;}),marker:{color:sl.map(function(s){return s.color;}),opacity:0.85},hovertemplate:"<b>%{y}</b><br>Pop: %{x:.2f}M<extra></extra>"}],
+    Object.assign({},BASE,{xaxis:{title:{text:"Population (M)",font:{size:10}},gridcolor:"rgba(255,255,255,.04)",zeroline:false},yaxis:{gridcolor:"rgba(255,255,255,.04)",tickfont:{size:11,color:"#ddeeff"}},showlegend:false,margin:{l:110,r:20,t:10,b:40}}),{responsive:true,displayModeBar:false});
+}
+function startRotation(){
+  clearInterval(rotTimer);
+  rotTimer=setInterval(function(){if(rotPaused)return;rotAngle+=ROT_SPEED;var rad=rotAngle*Math.PI/180;Plotly.relayout("rescue-3d",{"scene.camera.eye":{x:ROT_R*Math.cos(rad),y:ROT_R*Math.sin(rad),z:0.45}});},40);
+}
+function toggleRotation(){
+  var btn=document.getElementById("btn-rot");
+  if(rotTimer&&!rotPaused){clearInterval(rotTimer);rotTimer=null;btn.textContent="▶ RESUME";btn.classList.remove("active");}
+  else{startRotation();btn.textContent="⏸ PAUSE";btn.classList.add("active");}
+}
+var currentIdx=5;
+var LEAD_LABELS=["6h","12h","24h","48h","72h","96h"];
+function renderSupply(){buildExposure();buildCoastal();buildGantt();buildRiskTrend();renderCards(5);}
+function onLeadChange(v){
+  currentIdx=parseInt(v);var h=HORIZONS[currentIdx];
+  document.getElementById("lead-val").textContent=h.h+"h";
+  Plotly.relayout("supply-exposure",{
+    shapes:[{type:"line",x0:currentIdx,x1:currentIdx,y0:0,y1:12,line:{color:"#00e5ff",width:2,dash:"dash"}}],
+    annotations:[
+      {x:LEAD_LABELS[currentIdx],y:h.p90/1e6+0.4,text:"▲ "+fmtN(h.p90)+" P90",showarrow:false,font:{size:10,color:"#ffcc00"}},
+      {x:LEAD_LABELS[currentIdx],y:h.exp/1e6+0.4,text:"● "+fmtN(h.exp)+" Exp.",showarrow:false,font:{size:10,color:"#00aaff"}}
+    ]
+  });
+  renderCards(currentIdx);
+}
+function renderCards(idx){
+  var h=HORIZONS[idx];
+  var fe=Math.round(h.exp/200),we=Math.round(h.exp/500),me=Math.round(h.exp/1000);
+  var fp=Math.round(h.p90/200),wp=Math.round(h.p90/500),mp=Math.round(h.p90/1000);
+  document.getElementById("supply-cards-row").innerHTML=
+    '<div class="s-card"><div class="s-val">'+fe.toLocaleString()+'</div><div class="s-lbl">Food Kits ('+h.h+'h Exp.)</div><div class="s-unit">1 kit / 200 people</div></div>'+
+    '<div class="s-card"><div class="s-val">'+we.toLocaleString()+'</div><div class="s-lbl">Water Tanks ('+h.h+'h)</div><div class="s-unit">1 tank / 500 people</div></div>'+
+    '<div class="s-card"><div class="s-val">'+me.toLocaleString()+'</div><div class="s-lbl">Medical Units ('+h.h+'h)</div><div class="s-unit">1 unit / 1,000 people</div></div>'+
+    '<div class="s-card warn"><div class="s-val">'+fp.toLocaleString()+'</div><div class="s-lbl">Food Kits P90</div><div class="s-unit">Worst-case pre-position</div></div>'+
+    '<div class="s-card warn"><div class="s-val">'+wp.toLocaleString()+'</div><div class="s-lbl">Water Tanks P90</div><div class="s-unit">Worst-case threshold</div></div>'+
+    '<div class="s-card warn"><div class="s-val">'+mp.toLocaleString()+'</div><div class="s-lbl">Medical Units P90</div><div class="s-unit">P90 planning ceiling</div></div>';
+}
+function buildExposure(){
+  var h=HORIZONS[currentIdx];
+  Plotly.newPlot("supply-exposure",[
+    {type:"scatter",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.p90/1e6;}),name:"",fill:"tozeroy",fillcolor:"rgba(255,204,0,.07)",line:{color:"transparent"},showlegend:false,hoverinfo:"skip"},
+    {type:"scatter",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.exp/1e6;}),name:"",fill:"tozeroy",fillcolor:"rgba(0,170,255,.12)",line:{color:"transparent"},showlegend:false,hoverinfo:"skip"},
+    {type:"scatter",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.exp/1e6;}),name:"Expected",mode:"lines+markers",line:{color:"#00aaff",width:3},marker:{size:9,color:"#00aaff",line:{color:"white",width:1.5}},hovertemplate:"Lead %{x}<br><b>Exp: %{y:.2f}M</b><extra></extra>"},
+    {type:"scatter",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.p90/1e6;}),name:"P90 Worst-Case",mode:"lines+markers",line:{color:"#ffcc00",width:2,dash:"dash"},marker:{size:7,color:"#ffcc00"},hovertemplate:"Lead %{x}<br><b>P90: %{y:.2f}M</b><extra></extra>"}
+  ],Object.assign({},BASE,{margin:{l:60,r:20,t:30,b:40},
+    xaxis:{title:{text:"Forecast Lead Time",font:{size:11}},gridcolor:"rgba(255,255,255,.05)"},
+    yaxis:{title:{text:"Population Exposed (M)",font:{size:11}},gridcolor:"rgba(255,255,255,.05)",zeroline:false},
+    legend:{orientation:"h",x:0,y:1.08,bgcolor:"transparent",font:{size:11}},showlegend:true,
+    shapes:[{type:"line",x0:currentIdx,x1:currentIdx,y0:0,y1:12,line:{color:"#00e5ff",width:2,dash:"dash"}}],
+    annotations:[
+      {x:LEAD_LABELS[currentIdx],y:h.p90/1e6+0.4,text:"▲ "+fmtN(h.p90)+" P90",showarrow:false,font:{size:10,color:"#ffcc00"}},
+      {x:LEAD_LABELS[currentIdx],y:h.exp/1e6+0.4,text:"● "+fmtN(h.exp)+" Exp.",showarrow:false,font:{size:10,color:"#00aaff"}}
+    ]
+  }),{responsive:true,displayModeBar:false});
+}
+function buildCoastal(){
+  var cf=0.72;
+  Plotly.newPlot("supply-coastal",[
+    {type:"bar",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.exp*cf/1e6;}),name:"Coastal (72%)",marker:{color:"#1e90ff",opacity:0.85},hovertemplate:"Lead %{x}<br>Coastal: %{y:.2f}M<extra></extra>"},
+    {type:"bar",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.exp*(1-cf)/1e6;}),name:"Inland (28%)",marker:{color:"#30d158",opacity:0.85},hovertemplate:"Lead %{x}<br>Inland: %{y:.2f}M<extra></extra>"}
+  ],Object.assign({},BASE,{barmode:"stack",margin:{l:55,r:20,t:30,b:40},xaxis:{gridcolor:"rgba(255,255,255,.04)"},yaxis:{title:{text:"Pop (M)",font:{size:10}},gridcolor:"rgba(255,255,255,.04)",zeroline:false},legend:{orientation:"h",x:0,y:1.08,bgcolor:"transparent",font:{size:10}},showlegend:true}),{responsive:true,displayModeBar:false});
+}
+function buildGantt(){
+  var tasks=[
+    {task:"Emergency Water",start:0,end:24,color:"#1e90ff",qty:"7,662 tanks"},
+    {task:"Food Kits",start:6,end:48,color:"#30d158",qty:"19,155 kits"},
+    {task:"Medical Units",start:6,end:72,color:"#ff6b81",qty:"3,831 units"},
+    {task:"SAR Teams",start:0,end:48,color:"#ffa502",qty:"24 teams"},
+    {task:"Emergency Shelter",start:24,end:96,color:"#a29bfe",qty:"8,500 kits"},
+    {task:"Sanitation",start:48,end:96,color:"#00cec9",qty:"1,200 units"}
+  ];
+  Plotly.newPlot("supply-gantt",tasks.map(function(t){return{type:"bar",orientation:"h",y:[t.task],x:[t.end-t.start],base:[t.start],marker:{color:t.color,opacity:0.84},name:t.task,showlegend:false,text:[t.qty],textposition:"inside",textfont:{size:9,color:"white"},hovertemplate:"<b>"+t.task+"</b><br>"+t.start+"h → "+t.end+"h<br>"+t.qty+"<extra></extra>";};}),
+    Object.assign({},BASE,{margin:{l:115,r:20,t:10,b:50},xaxis:{title:{text:"Hours from Warning",font:{size:10}},range:[0,100],tickvals:[0,6,12,24,48,72,96],ticktext:["0h","6h","12h","24h","48h","72h","96h"],gridcolor:"rgba(255,255,255,.05)"},yaxis:{gridcolor:"rgba(255,255,255,.04)",tickfont:{size:10}}}),{responsive:true,displayModeBar:false});
+}
+function buildRiskTrend(){
+  Plotly.newPlot("supply-risk",[
+    {type:"scatter",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.re;}),name:"Expected Risk",mode:"lines+markers",line:{color:"#00aaff",width:2},marker:{size:7,color:"#00aaff"},hovertemplate:"Lead %{x}<br>Risk: %{y:.2f}<extra></extra>"},
+    {type:"scatter",x:LEAD_LABELS,y:HORIZONS.map(function(d){return d.rp;}),name:"P90 Risk",mode:"lines+markers",line:{color:"#ff4757",width:2,dash:"dash"},marker:{size:7,color:"#ff4757"},hovertemplate:"Lead %{x}<br>P90 Risk: %{y:.2f}<extra></extra>"}
+  ],Object.assign({},BASE,{margin:{l:55,r:20,t:30,b:40},
+    xaxis:{gridcolor:"rgba(255,255,255,.04)"},
+    yaxis:{title:{text:"Risk Score",font:{size:10}},range:[62,82],gridcolor:"rgba(255,255,255,.04)",zeroline:false},
+    legend:{orientation:"h",x:0,y:1.08,bgcolor:"transparent",font:{size:10}},showlegend:true,
+    shapes:[{type:"line",x0:-0.5,x1:5.5,y0:73,y1:73,line:{color:"#ffa502",width:1,dash:"dash"}}],
+    annotations:[{x:4.5,y:73.4,text:"ACTION THRESHOLD",showarrow:false,font:{size:8,color:"#ffa502"}}]
+  }),{responsive:true,displayModeBar:false});
+}
+var RENDERERS={risk:renderRisk,rescue:renderRescue,supply:renderSupply};
+window.addEventListener("DOMContentLoaded",function(){
+  startClock();
+  setTimeout(function(){
+    countUp("kpi-cones",1262,"",1600,0);
+    countUp("kpi-risk",67.86,"",1400,2);
+    countUp("kpi-pop",2.19,"M",1600,2);
+    countUp("kpi-storms",8,"",1000,0);
+    countUp("kpi-regions",46,"",1200,0);
+  },200);
+  _rendered.risk=true;renderRisk();
+});
+</script>
+</body>
+</html>
