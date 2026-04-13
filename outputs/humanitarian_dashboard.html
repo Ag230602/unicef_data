@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>UNICEF – Humanitarian Risk Command</title>
-<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{--bg0:#04080f;--bg1:#080e1c;--bg2:#0c1526;--bg3:#101e30;--blue:#00aaff;--cyan:#00e5ff;--red:#ff3b30;--orange:#ff9500;--yellow:#ffcc00;--green:#30d158;--text1:#ddeeff;--text2:#6a8cb8;--text3:#2d4a70;--border:rgba(0,170,255,0.12);}
@@ -492,7 +491,7 @@ function buildRiskTrend(){
   }),{responsive:true,displayModeBar:false});
 }
 var RENDERERS={risk:renderRisk,rescue:renderRescue,supply:renderSupply};
-window.addEventListener("DOMContentLoaded",function(){
+function _init(){
   startClock();
   setTimeout(function(){
     countUp("kpi-cones",1262,"",1600,0);
@@ -502,7 +501,9 @@ window.addEventListener("DOMContentLoaded",function(){
     countUp("kpi-regions",46,"",1200,0);
   },200);
   _rendered.risk=true;renderRisk();
-});
+}
 </script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"></script>
+<script>_init();</script>
 </body>
 </html>
