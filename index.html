@@ -475,7 +475,7 @@ function buildGantt(){
     {task:"Emergency Shelter",start:24,end:96,color:"#a29bfe",qty:"8,500 kits"},
     {task:"Sanitation",start:48,end:96,color:"#00cec9",qty:"1,200 units"}
   ];
-  Plotly.newPlot("supply-gantt",tasks.map(function(t){return{type:"bar",orientation:"h",y:[t.task],x:[t.end-t.start],base:[t.start],marker:{color:t.color,opacity:0.84},name:t.task,showlegend:false,text:[t.qty],textposition:"inside",textfont:{size:9,color:"white"},hovertemplate:"<b>"+t.task+"</b><br>"+t.start+"h → "+t.end+"h<br>"+t.qty+"<extra></extra>";};}),
+  Plotly.newPlot("supply-gantt",tasks.map(function(t){return{type:"bar",orientation:"h",y:[t.task],x:[t.end-t.start],base:[t.start],marker:{color:t.color,opacity:0.84},name:t.task,showlegend:false,text:[t.qty],textposition:"inside",textfont:{size:9,color:"white"},hovertemplate:"<b>"+t.task+"</b><br>"+t.start+"h \u2192 "+t.end+"h<br>"+t.qty+"<extra></extra>";};}),
     Object.assign({},BASE,{margin:{l:115,r:20,t:10,b:50},xaxis:{title:{text:"Hours from Warning",font:{size:10}},range:[0,100],tickvals:[0,6,12,24,48,72,96],ticktext:["0h","6h","12h","24h","48h","72h","96h"],gridcolor:"rgba(255,255,255,.05)"},yaxis:{gridcolor:"rgba(255,255,255,.04)",tickfont:{size:10}}}),{responsive:true,displayModeBar:false});
 }
 function buildRiskTrend(){
@@ -503,7 +503,6 @@ function _init(){
   _rendered.risk=true;renderRisk();
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js"></script>
-<script>_init();</script>
+<script src="plotly.min.js" onload="_init()" onerror="(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/plotly.js-dist-min@2.27.0/plotly.min.js';s.onload=function(){_init();};document.head.appendChild(s);})()"></script>
 </body>
 </html>
