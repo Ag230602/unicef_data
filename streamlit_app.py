@@ -15,6 +15,7 @@ Deploy to Streamlit Cloud:
 
 import math
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.graph_objects as go
 from datetime import datetime, timezone
 
@@ -27,19 +28,21 @@ st.set_page_config(
 )
 
 # ── Google Fonts + Dark Theme CSS ─────────────────────────────────────────────
-st.markdown("""
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
-<style>
+# Inject CSS via parent-frame JS — works in ALL Streamlit versions including 1.36+
+# (newer Streamlit strips <style> tags from st.markdown for security, so we
+#  inject a real <style> element directly into the parent document's <head>)
+_CSS = """
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Inter:wght@300;400;600;700&display=swap');
+
 [data-testid="stAppViewContainer"] { background: #04080f !important; }
-[data-testid="stHeader"] { background: rgba(4,8,15,0.95) !important; border-bottom: 1px solid rgba(0,170,255,0.1); }
-section[data-testid="stMain"] { background: #04080f !important; }
-[data-testid="stToolbar"] { display: none; }
+[data-testid="stHeader"]           { background: rgba(4,8,15,0.95) !important; border-bottom: 1px solid rgba(0,170,255,0.1); }
+section[data-testid="stMain"]      { background: #04080f !important; }
+[data-testid="stToolbar"]          { display: none; }
 div.block-container { padding: 1rem 1.5rem 2rem !important; max-width: 1800px; }
 body { background: #04080f; color: #ddeeff; font-family: 'Inter', sans-serif; }
 h1,h2,h3 { color: #ddeeff; font-family: 'Rajdhani', sans-serif; }
 p { color: #8ab0d0; }
 
-/* Tabs */
 button[data-baseweb="tab"] {
     background: transparent; color: #6a8cb8;
     font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
@@ -53,7 +56,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
 }
 button[data-baseweb="tab"]:hover { color: #00aaff !important; }
 
-/* Metrics */
 [data-testid="metric-container"] {
     background: #0c1526; border: 1px solid rgba(0,170,255,0.14);
     border-radius: 11px; padding: 14px 16px;
@@ -68,31 +70,36 @@ button[data-baseweb="tab"]:hover { color: #00aaff !important; }
     font-size: 22px !important; font-weight: 700 !important;
 }
 
-/* Sliders */
-[data-testid="stSlider"] label { color: #6a8cb8 !important; font-size: 11px; }
-
-/* Selectbox */
-[data-testid="stSelectbox"] label { color: #6a8cb8 !important; font-size: 11px; }
-div[data-baseweb="select"] > div {
-    background: #0c1526 !important; border-color: rgba(0,170,255,0.2) !important;
-    color: #ddeeff !important;
-}
-
-/* Plotly chart bg */
+[data-testid="stSlider"] label      { color: #6a8cb8 !important; font-size: 11px; }
+[data-testid="stSelectbox"] label   { color: #6a8cb8 !important; font-size: 11px; }
+div[data-baseweb="select"] > div    { background: #0c1526 !important; border-color: rgba(0,170,255,0.2) !important; color: #ddeeff !important; }
 [data-testid="stPlotlyChart"] > div { background: transparent !important; }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar       { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: #04080f; }
 ::-webkit-scrollbar-thumb { background: #1e3050; border-radius: 3px; }
 
-/* Alert / info boxes */
 .alert-red  { background:rgba(255,59,48,.08);  border:1px solid rgba(255,59,48,.5);  border-radius:9px; padding:10px 16px; margin-bottom:10px; font-size:12.5px; color:#ffaaaa; }
 .alert-ong  { background:rgba(255,149,0,.08);  border:1px solid rgba(255,149,0,.5);  border-radius:9px; padding:10px 16px; margin-bottom:10px; font-size:12.5px; color:#ffcc88; }
 .alert-blu  { background:rgba(0,170,255,.08);  border:1px solid rgba(0,170,255,.5);  border-radius:9px; padding:10px 16px; margin-bottom:10px; font-size:12.5px; color:#88ccff; }
 .panel-hdr  { font-family:'Rajdhani',sans-serif; font-size:12.5px; font-weight:600; letter-spacing:1.3px; text-transform:uppercase; color:#00e5ff; margin-bottom:8px; padding:4px 0 6px; border-bottom:1px solid rgba(0,170,255,0.12); }
-</style>
-""", unsafe_allow_html=True)
+"""
+
+# Use components.html to inject CSS via JS into the parent document <head>
+# This is the only method that reliably works in Streamlit 1.36+
+components.html(
+    f"""<script>
+    (function() {{
+        var id = 'unicef-dark-theme';
+        if (window.parent.document.getElementById(id)) return;
+        var s = window.parent.document.createElement('style');
+        s.id = id;
+        s.textContent = `{_CSS}`;
+        window.parent.document.head.appendChild(s);
+    }})();
+    </script>""",
+    height=0,
+)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
