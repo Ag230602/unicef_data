@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Humanitarian Music Video Montage</title>
+    <style>
+        body { margin:0; background:#04080f; color:#ddeeff; font-family:Inter,Arial,sans-serif; }
+        .wrap { height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+        h1 { color:#00e5ff; letter-spacing:1px; margin-bottom:14px; }
+        .slide {
+            width:min(900px,88vw); min-height:180px; border:1px solid rgba(0,170,255,.25);
+            border-radius:14px; background:rgba(12,21,38,.85); padding:24px; font-size:28px; line-height:1.35;
+            box-shadow:0 12px 40px rgba(0,0,0,.25);
+        }
+        .hint { margin-top:12px; font-size:12px; color:#7ca5c7; }
+        audio { margin-top:16px; width:min(900px,88vw); }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>Humanitarian Music Video Montage</h1>
+        <div class="slide" id="slide"></div>
+        <audio controls autoplay loop src="chain_montage_music.wav"></audio>
+        <div class="hint">Text → Music → Video Montage (HTML). Use screen recording for MP4 demo capture.</div>
+    </div>
+    <script>
+        const slides = ["Rapid response teams mobilize.",
+        "Supplies move to coastal districts.",
+        "Families receive support."];
+        let i = 0;
+        const node = document.getElementById('slide');
+        function tick() {
+            node.textContent = slides[i % slides.length];
+            i += 1;
+        }
+        tick();
+        setInterval(tick, 3500);
+    </script>
+</body>
+</html>
