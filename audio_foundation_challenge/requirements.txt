@@ -7,3 +7,4 @@ jiwer>=3.0.4
 accelerate>=0.30.0
 sentencepiece>=0.2.0
 scipy>=1.11.0
+streamlit>=1.32.0

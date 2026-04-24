@@ -15,6 +15,7 @@ Deploy to Streamlit Cloud:
 
 import math
 import csv
+import sys
 from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
@@ -740,11 +741,12 @@ st.markdown("""
 #  TABS
 # ══════════════════════════════════════════════════════════════════════════════
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "  ⚠️  RISK PREP  ",
     "  🚑  RESCUE PREP  ",
     "  📦  SUPPLY PREP  ",
     "  🔊  AUDIO BRIEFING  ",
+    "  🤖  ONSITE AI  ",
 ])
 
 
@@ -928,6 +930,248 @@ with tab4:
             height=220,
             key="submission_disclosure_text",
         )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  TAB 5 — ONSITE AI (LIVE PROMPTING)
+# ─────────────────────────────────────────────────────────────────────────────
+with tab5:
+    st.markdown('<div class="panel-hdr">🧠  LIVE ONSITE PROMPT ASSISTANT</div>', unsafe_allow_html=True)
+
+    module_root = Path(__file__).resolve().parent / "audio_foundation_challenge"
+    src_root = module_root / "src"
+    if src_root.as_posix() not in sys.path:
+        sys.path.append(src_root.as_posix())
+
+    try:
+        import onsite_assistant as onsite
+        import numpy as _np
+        import soundfile as _sf
+    except Exception as e:
+        st.warning(
+            "Onsite AI dependencies are not available in this runtime. "
+            "Install from audio_foundation_challenge/requirements.txt to enable live generation."
+        )
+        st.caption(f"Load detail: {e}")
+    else:
+        out_dir = module_root / "outputs"
+        out_dir.mkdir(parents=True, exist_ok=True)
+
+        @st.cache_resource
+        def _music_model():
+            return onsite.MusicGenGenerator()
+
+        @st.cache_resource
+        def _asr_model():
+            return onsite.WhisperTranscriber()
+
+        @st.cache_resource
+        def _tts_model():
+            return onsite.SpeechT5VoiceAssistant()
+
+        @st.cache_resource
+        def _translator_model():
+            return onsite.NLLBTranslator()
+
+        a, b, c, d = st.tabs([
+            "🎼 Music Prompting",
+            "🎙️ Noisy vs Clean Speech",
+            "🌍 Multilingual + Voice Assistant",
+            "⛓️ Multimodal Chains",
+        ])
+
+        with a:
+            col_a1, col_a2 = st.columns(2)
+            with col_a1:
+                domain = st.selectbox(
+                    "Domain context",
+                    [
+                        "humanitarian command center briefing",
+                        "emergency shelter calm ambience",
+                        "rapid response coordination montage",
+                        "public health awareness campaign",
+                    ],
+                    key="onsite_domain",
+                )
+                goal = st.text_input(
+                    "Goal",
+                    "Build urgency but preserve hope for responders",
+                    key="onsite_goal",
+                )
+            with col_a2:
+                style = st.text_input(
+                    "Style prompt",
+                    "cinematic, hybrid orchestral, modern percussion",
+                    key="onsite_style",
+                )
+                intensity = st.slider("Energy", 1, 10, 6, key="onsite_intensity")
+                duration = st.slider("Duration (s)", 4, 12, 8, key="onsite_duration")
+
+            engineered = onsite.build_music_prompt(goal, style, domain, intensity)
+            st.code(engineered)
+            if st.button("Generate Live Music", key="onsite_gen_music"):
+                with st.spinner("Generating with MusicGen..."):
+                    audio, sr = _music_model().generate(engineered, duration_seconds=duration)
+                    p = out_dir / "onsite_musicgen.wav"
+                    _sf.write(p.as_posix(), audio, sr)
+                st.audio(p.read_bytes(), format="audio/wav")
+                st.success(f"Saved: {p.as_posix()}")
+
+        with b:
+            up = st.file_uploader("Upload WAV speech", type=["wav"], key="onsite_speech_upload")
+            ref = st.text_area("Optional reference transcript", "", key="onsite_ref_text")
+            snr = st.slider("Noise level (SNR dB)", 0.0, 30.0, 8.0, 0.5, key="onsite_snr")
+            if up is not None:
+                clean = out_dir / "onsite_clean.wav"
+                clean.write_bytes(up.read())
+                st.audio(clean.read_bytes(), format="audio/wav")
+                aud, sr = _sf.read(clean.as_posix())
+                if getattr(aud, "ndim", 1) > 1:
+                    aud = _np.mean(aud, axis=1)
+                aud = aud.astype(_np.float32)
+
+                if st.button("Run Clean vs Noisy", key="onsite_run_noise"):
+                    with st.spinner("Running ASR tests..."):
+                        res = onsite.compare_clean_vs_noisy(
+                            transcriber=_asr_model(),
+                            audio=aud,
+                            sampling_rate=sr,
+                            snr_db=snr,
+                            reference_text=ref,
+                        )
+                    st.markdown("**Clean transcript**")
+                    st.write(res.clean_text)
+                    st.markdown("**Noisy transcript**")
+                    st.write(res.noisy_text)
+                    if res.clean_wer is not None and res.noisy_wer is not None:
+                        q1, q2, q3 = st.columns(3)
+                        q1.metric("Clean WER", f"{res.clean_wer:.4f}")
+                        q2.metric("Noisy WER", f"{res.noisy_wer:.4f}")
+                        q3.metric("Δ WER", f"{res.noisy_wer - res.clean_wer:+.4f}")
+
+        with c:
+            langs = list(onsite.LANGUAGE_CODES.keys())
+            lc1, lc2 = st.columns(2)
+            with lc1:
+                src_lang = st.selectbox("Source language", langs, index=0, key="onsite_src")
+                tgt_lang = st.selectbox("Target language", langs, index=1, key="onsite_tgt")
+            with lc2:
+                txt = st.text_area(
+                    "Input text",
+                    "Emergency update: prioritize clean water and medical kits in high-risk coastal districts.",
+                    key="onsite_input_text",
+                )
+                ref_voice = st.file_uploader(
+                    "Optional reference voice WAV",
+                    type=["wav"],
+                    key="onsite_ref_voice",
+                )
+
+            if st.button("Translate + Generate Voice", key="onsite_translate_tts"):
+                with st.spinner("Translating + synthesizing..."):
+                    translated = _translator_model().translate(txt, src_lang, tgt_lang)
+                    tts = _tts_model()
+                    embedding = None
+                    if ref_voice is not None:
+                        ref_path = out_dir / "onsite_reference_voice.wav"
+                        ref_path.write_bytes(ref_voice.read())
+                        embedding = tts.embedding_from_reference(ref_path)
+                    speech, sr = tts.synthesize(translated, speaker_embedding=embedding)
+                    out_wav = out_dir / "onsite_translated_voice.wav"
+                    _sf.write(out_wav.as_posix(), speech, sr)
+                st.markdown("**Translated text**")
+                st.write(translated)
+                st.audio(out_wav.read_bytes(), format="audio/wav")
+                st.success(f"Saved: {out_wav.as_posix()}")
+
+        with d:
+            st.markdown("#### speech → text → summary → voice narration")
+            speech_chain_file = st.file_uploader(
+                "Upload speech WAV for full chain",
+                type=["wav"],
+                key="chain_speech_upload",
+            )
+            chain_langs = list(onsite.LANGUAGE_CODES.keys())
+            narration_lang = st.selectbox(
+                "Narration language",
+                chain_langs,
+                index=0,
+                key="chain_narration_lang",
+            )
+
+            @st.cache_resource
+            def _summarizer_model():
+                return onsite.TextSummarizer()
+
+            if speech_chain_file is not None and st.button("Run STS Narration Chain", key="chain_sts_btn"):
+                with st.spinner("Transcribing, summarizing, translating, and narrating..."):
+                    in_wav = out_dir / "chain_input_speech.wav"
+                    in_wav.write_bytes(speech_chain_file.read())
+                    aud, sr = _sf.read(in_wav.as_posix())
+                    if getattr(aud, "ndim", 1) > 1:
+                        aud = _np.mean(aud, axis=1)
+                    aud = aud.astype(_np.float32)
+
+                    transcript = _asr_model().transcribe_audio_array(aud, sr)
+                    summary = _summarizer_model().summarize(transcript)
+
+                    translated = summary
+                    if narration_lang != "English":
+                        translated = _translator_model().translate(summary, "English", narration_lang)
+
+                    speech, narr_sr = _tts_model().synthesize(translated)
+                    out_wav = out_dir / "chain_summary_narration.wav"
+                    _sf.write(out_wav.as_posix(), speech, narr_sr)
+
+                st.markdown("**Transcript**")
+                st.write(transcript)
+                st.markdown("**Summary**")
+                st.write(summary)
+                st.markdown("**Narration text**")
+                st.write(translated)
+                st.audio(out_wav.read_bytes(), format="audio/wav")
+                st.success(f"Saved narration: {out_wav.as_posix()}")
+
+            st.markdown("---")
+            st.markdown("#### text → music → video montage")
+            montage_text = st.text_area(
+                "Storyboard text",
+                "Rapid response teams mobilize. Supplies move to coastal districts. Families receive support.",
+                key="chain_montage_text",
+            )
+            montage_style = st.text_input(
+                "Music style",
+                "uplifting cinematic ambient",
+                key="chain_montage_style",
+            )
+            if st.button("Run Music + Montage Chain", key="chain_montage_btn"):
+                with st.spinner("Generating music and montage page..."):
+                    prompt = onsite.build_music_prompt(
+                        user_goal="Support humanitarian storytelling montage",
+                        style_prompt=montage_style,
+                        domain_context="humanitarian operations briefing video",
+                        intensity=6,
+                    )
+                    music, music_sr = _music_model().generate(prompt, duration_seconds=8)
+                    music_path = out_dir / "chain_montage_music.wav"
+                    _sf.write(music_path.as_posix(), music, music_sr)
+
+                    html_path = out_dir / "chain_music_video_montage.html"
+                    onsite.build_music_video_montage_html(
+                        text=montage_text,
+                        title="Humanitarian Music Video Montage",
+                        audio_rel_path="chain_montage_music.wav",
+                        output_html_path=html_path,
+                    )
+                st.audio(music_path.read_bytes(), format="audio/wav")
+                st.markdown(f"Montage page saved: {html_path.as_posix()}")
+                st.markdown(
+                    f"Open locally: [chain_music_video_montage.html](audio_foundation_challenge/outputs/chain_music_video_montage.html)"
+                )
+
+            st.markdown("---")
+            st.markdown("#### voice → translation → cloned speech output")
+            st.caption("This chain is available above in the Multilingual + Voice Assistant tab.")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""

@@ -18,6 +18,14 @@ It builds a practical speech intelligence pipeline:
    - **Summary quality proxy** (fact coverage score)
 5. Saves audio + evaluation reports for GitHub/demo/slides.
 
+It also includes a **live onsite prompt app** (no pre-generated-only workflow):
+
+1. Better prompt engineering for music generation (`MusicGen Small`).
+2. Noisy vs clean speech input testing (`Whisper Small`).
+3. Multilingual speech testing + translation (`NLLB-200 distilled`).
+4. Style prompts + domain-specific customization for humanitarian context.
+5. Voice cloning assistant mode (reference-voice-conditioned SpeechT5 embedding).
+
 ---
 
 ## Models used
@@ -33,10 +41,12 @@ All are open-source models available through Hugging Face.
 ## Folder structure
 
 - `run_pipeline.py` - end-to-end runner
+- `onsite_prompt_app.py` - live prompt app for onsite generation/testing
 - `src/data_loader.py` - reads UNICEF CSVs
 - `src/prompt_engineering.py` - baseline vs improved script generation
 - `src/tts_model.py` - SpeechT5 synthesis
 - `src/evaluate.py` - WER, latency, quality metrics + report output
+- `src/onsite_assistant.py` - multilingual/music/noise-test/voice-assistant helpers
 - `requirements.txt` - Python dependencies
 - `slides/slide_outline.md` - ready 10+ slide content plan
 - `demo/demo_script.md` - 1-2 minute demo talking points
@@ -66,6 +76,12 @@ python run_pipeline.py \
   --summary-csv ../outputs/aots_humanitarian_risk_summary.csv \
   --region-csv ../outputs/aots_region_risk_scores.csv \
   --horizon-csv ../outputs/aots_expected_exposure_by_horizon.csv
+```
+
+Run the live onsite app:
+
+```bash
+streamlit run onsite_prompt_app.py
 ```
 
 ---
