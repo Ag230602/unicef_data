@@ -1,2 +1,5 @@
 streamlit>=1.32.0
 plotly>=5.18.0
+
+# Install onsite audio assistant dependencies used by streamlit_app.py
+-r audio_foundation_challenge/requirements.txt
