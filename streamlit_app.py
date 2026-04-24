@@ -14,6 +14,8 @@ Deploy to Streamlit Cloud:
 """
 
 import math
+import csv
+from pathlib import Path
 import streamlit as st
 import streamlit.components.v1 as components
 import plotly.graph_objects as go
@@ -622,6 +624,30 @@ def render_supply_cards(idx):
     return f'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">{cards}</div>'
 
 
+def load_audio_artifacts():
+    base = Path(__file__).resolve().parent / "audio_foundation_challenge" / "outputs"
+    files = {
+        "baseline_audio": base / "baseline_briefing.wav",
+        "improved_audio": base / "improved_briefing.wav",
+        "baseline_script": base / "baseline_script.txt",
+        "improved_script": base / "improved_script.txt",
+        "eval_csv": base / "evaluation_results.csv",
+    }
+
+    has_minimum = files["baseline_audio"].exists() and files["improved_audio"].exists()
+    scripts = {
+        "baseline": files["baseline_script"].read_text(encoding="utf-8") if files["baseline_script"].exists() else "",
+        "improved": files["improved_script"].read_text(encoding="utf-8") if files["improved_script"].exists() else "",
+    }
+
+    eval_rows = []
+    if files["eval_csv"].exists():
+        with files["eval_csv"].open("r", encoding="utf-8", newline="") as f:
+            eval_rows = list(csv.DictReader(f))
+
+    return base, files, has_minimum, scripts, eval_rows
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 #  HEADER
 # ══════════════════════════════════════════════════════════════════════════════
@@ -681,7 +707,12 @@ st.markdown("""
 #  TABS
 # ══════════════════════════════════════════════════════════════════════════════
 
-tab1, tab2, tab3 = st.tabs(["  ⚠️  RISK PREP  ", "  🚑  RESCUE PREP  ", "  📦  SUPPLY PREP  "])
+tab1, tab2, tab3, tab4 = st.tabs([
+    "  ⚠️  RISK PREP  ",
+    "  🚑  RESCUE PREP  ",
+    "  📦  SUPPLY PREP  ",
+    "  🔊  AUDIO BRIEFING  ",
+])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -791,6 +822,51 @@ with tab3:
         st.markdown('<div class="panel-hdr">📉  RISK TREND BY LEAD TIME</div>', unsafe_allow_html=True)
         st.plotly_chart(build_risk_trend(),
                         use_container_width=True, config={"displayModeBar": False})
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  TAB 4 — AUDIO BRIEFING
+# ─────────────────────────────────────────────────────────────────────────────
+with tab4:
+    st.markdown('<div class="panel-hdr">🗣️  FOUNDATION-MODEL BRIEFINGS</div>', unsafe_allow_html=True)
+    base_dir, audio_files, has_audio, scripts, eval_rows = load_audio_artifacts()
+
+    st.caption(f"Source folder: {base_dir}")
+
+    if not has_audio:
+        st.warning(
+            "Audio files are not found yet. Run the pipeline in the separate folder: "
+            "audio_foundation_challenge/run_pipeline.py"
+        )
+    else:
+        a1, a2 = st.columns(2, gap="medium")
+
+        with a1:
+            st.markdown('<div class="panel-hdr">BASELINE BRIEFING</div>', unsafe_allow_html=True)
+            if audio_files["baseline_audio"].exists():
+                st.audio(audio_files["baseline_audio"].read_bytes(), format="audio/wav")
+            st.text_area("Baseline Script", value=scripts["baseline"], height=130, key="baseline_script_view")
+
+        with a2:
+            st.markdown('<div class="panel-hdr">IMPROVED BRIEFING</div>', unsafe_allow_html=True)
+            if audio_files["improved_audio"].exists():
+                st.audio(audio_files["improved_audio"].read_bytes(), format="audio/wav")
+            st.text_area("Improved Script", value=scripts["improved"], height=130, key="improved_script_view")
+
+    if eval_rows:
+        st.markdown('<div class="panel-hdr">📏  BASELINE vs IMPROVED EVALUATION</div>', unsafe_allow_html=True)
+        st.dataframe(eval_rows, use_container_width=True, hide_index=True)
+
+        by_name = {r.get("setting", ""): r for r in eval_rows}
+        if "baseline" in by_name and "improved" in by_name:
+            b = by_name["baseline"]
+            i = by_name["improved"]
+            c1, c2, c3 = st.columns(3)
+            c1.metric("Δ WER (improved - baseline)", f"{float(i['asr_wer']) - float(b['asr_wer']):+.4f}")
+            c2.metric("Δ Latency (s)", f"{float(i['tts_latency_seconds']) - float(b['tts_latency_seconds']):+.4f}")
+            c3.metric("Δ Fact Coverage", f"{float(i['fact_coverage_score']) - float(b['fact_coverage_score']):+.4f}")
+    else:
+        st.info("No evaluation CSV found yet. Generate it from the audio pipeline to display metrics here.")
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""
