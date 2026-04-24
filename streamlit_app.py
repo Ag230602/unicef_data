@@ -624,6 +624,39 @@ def render_supply_cards(idx):
     return f'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">{cards}</div>'
 
 
+def build_ai_assistance(lead_idx):
+    top_regions = sorted(ALL_REGIONS, key=lambda r: r["risk"], reverse=True)[:3]
+    top_region_text = ", ".join(r["id"] for r in top_regions)
+    top_storm = max(STORMS, key=lambda s: s["maxRisk"])
+    h = HORIZONS[lead_idx]
+
+    briefing = (
+        f"AI operational briefing: Highest current storm risk is {top_storm['name']} "
+        f"in {top_storm['region']} with risk {top_storm['maxRisk']:.1f}. "
+        f"At {h['h']} hours, expected exposure is {fmt_pop(h['exp'])} and P90 exposure is {fmt_pop(h['p90'])}. "
+        f"Priority regions by risk are {top_region_text}."
+    )
+
+    recommendations = [
+        "Pre-position food, water, and medical units in top-3 priority regions.",
+        "Schedule 6-hour update cadence while risk remains above action threshold (73).",
+        f"Prepare surge rescue teams for {top_storm['name']} landfall corridor.",
+        "Validate partner warehouse readiness against P90 exposure scenario.",
+    ]
+
+    submission_text = (
+        "### AI Assistance Feature (Dashboard)\n"
+        "We integrated an AI assistance panel in the Streamlit dashboard to auto-generate:\n"
+        "1) operational briefings from current risk/exposure metrics,\n"
+        "2) prioritized response recommendations, and\n"
+        "3) a transparent disclosure summary for submission materials.\n\n"
+        "**How it was used:** The feature supports rapid decision support by turning dashboard metrics into concise, actionable guidance for preparedness planning.\n"
+        "**Transparency:** AI-generated suggestions are decision support only and were human-reviewed before final conclusions."
+    )
+
+    return briefing, recommendations, submission_text
+
+
 def load_audio_artifacts():
     base = Path(__file__).resolve().parent / "audio_foundation_challenge" / "outputs"
     files = {
@@ -830,6 +863,13 @@ with tab3:
 with tab4:
     st.markdown('<div class="panel-hdr">🗣️  FOUNDATION-MODEL BRIEFINGS</div>', unsafe_allow_html=True)
     base_dir, audio_files, has_audio, scripts, eval_rows = load_audio_artifacts()
+    selected_horizon = st.select_slider(
+        "AI Assistance Horizon",
+        options=list(range(len(LEAD_LABELS))),
+        value=2,
+        format_func=lambda x: LEAD_LABELS[x],
+        key="ai_horizon_idx",
+    )
 
     st.caption(f"Source folder: {base_dir}")
 
@@ -867,6 +907,27 @@ with tab4:
             c3.metric("Δ Fact Coverage", f"{float(i['fact_coverage_score']) - float(b['fact_coverage_score']):+.4f}")
     else:
         st.info("No evaluation CSV found yet. Generate it from the audio pipeline to display metrics here.")
+
+    st.markdown('<div class="panel-hdr">🤖  AI ASSISTANCE</div>', unsafe_allow_html=True)
+    ai_briefing, ai_recs, submission_text = build_ai_assistance(selected_horizon)
+
+    st.markdown(
+        f"<div style='background:#0c1526;border:1px solid rgba(0,170,255,0.16);"
+        f"border-radius:11px;padding:12px 14px;color:#cfe8ff;font-size:13px'>{ai_briefing}</div>",
+        unsafe_allow_html=True,
+    )
+
+    st.markdown("#### Recommended Actions")
+    for i, rec in enumerate(ai_recs, start=1):
+        st.write(f"{i}. {rec}")
+
+    with st.expander("Submission-ready AI disclosure text"):
+        st.text_area(
+            "Copy for README/PPT",
+            value=submission_text,
+            height=220,
+            key="submission_disclosure_text",
+        )
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""

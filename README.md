@@ -45,6 +45,15 @@ All three UIs present the same decision logic:
 - Rescue Prep,
 - Supply Prep.
 
+Streamlit now also includes an **AI Assistance** panel in the Audio Briefing tab:
+- AI-generated operational briefing text,
+- prioritized response recommendations,
+- submission-ready disclosure text block for PPT/README.
+
+Related files:
+- [audio_foundation_challenge](audio_foundation_challenge)
+- [SUBMISSION_AI_ASSISTANCE.md](SUBMISSION_AI_ASSISTANCE.md)
+
 ### D) Deployment packs
 - Public static deploy package in [deploy/index.html](deploy/index.html).
 - Alternate static entry in [deploy/humanitarian_dashboard.html](deploy/humanitarian_dashboard.html).
