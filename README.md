@@ -400,3 +400,28 @@ This work demonstrates a complete humanitarian forecasting stack:
 - to public-ready deployment.
 
 Current outputs are fully functional for demonstration and workflow validation. For operational or publication-grade impact estimates, the next critical upgrade is replacing proxy external vulnerability layers with authoritative real datasets.
+
+---
+
+## 13) Final submission status (audio + dashboard)
+
+Latest complete app (with all requested onsite AI chains):
+- [streamlit_app.py](streamlit_app.py)
+
+Final packaged folder prepared for submission handoff:
+- [FINAL_SUBMISSION_PACKAGE](FINAL_SUBMISSION_PACKAGE)
+- [FINAL_SUBMISSION_PACKAGE/LATEST_APP.md](FINAL_SUBMISSION_PACKAGE/LATEST_APP.md)
+- [FINAL_SUBMISSION_PACKAGE/audio_foundation_challenge](FINAL_SUBMISSION_PACKAGE/audio_foundation_challenge)
+
+Audio challenge primary working folder:
+- [audio_foundation_challenge](audio_foundation_challenge)
+
+Included bonus multimodal chains in app:
+- speech → text → summary → voice narration
+- text → music → video montage
+- voice → translation → cloned speech output
+
+Still to finalize manually before class submission:
+- Final `.pptx` export (10+ slides)
+- Demo video upload + share link
+- Finalize AI tools disclosure placeholders with exact tools you used
