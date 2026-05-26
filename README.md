@@ -8,7 +8,9 @@ This workspace now contains:
 - animated evidence products (GIF/MP4/interactive world map),
 - and static deployment packages ready for public hosting.
 
-Live demo (static dashboard): https://ag230602.github.io/unicef_data/
+Live demo (static dashboard): https://unicefdata-5z7ljpegw9adffhibesfsd.streamlit.app/
+<img width="468" height="51" alt="image" src="https://github.com/user-attachments/assets/d006f0f2-d51c-4ada-82c5-048b4f868add" />
+
 
 ---
 
